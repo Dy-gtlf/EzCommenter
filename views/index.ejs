@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <input type="text" maxlength="100" size="30">
+    <input type="button" value="送信">
+    <br>
+    <br>
+    <select size="15" style="width: 300px">
+      <option value="nikujyaga">肉じゃが</option>
+      <option value="sukiyaki">すき焼き</option>
+      <option value="kare">カレーライス</option>
+      <option value="guratan">グラタン</option>
+      <option value="hanbaku">ハンバーグ</option>
+      <option value="kanitama">かに玉</option>
+      </select>
+  </body>
+  <form action="http://localhost/Textream/MakeTextStream" method="POST">
+      <div>
+          <input type="text" id="str" name="str">
+      </div>
+      <div>
+          <button>Send my greetings</button>
+      </div>
+  </form>
+  
+</html>
