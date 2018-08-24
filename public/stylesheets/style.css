@@ -1,3 +1,16 @@
 body {
   padding: 30px;
 }
+
+.List {
+  width: 500px;
+  height: 300px;
+  /* overflow: auto; */
+  overflow-x: hidden;
+}
+
+ul {
+  list-style: none;
+  border: 1px solid black;
+  padding-left: 0px;
+}

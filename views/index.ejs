@@ -1,31 +1,61 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <input type="text" maxlength="100" size="30">
-    <input type="button" value="送信">
-    <br>
-    <br>
-    <select size="15" style="width: 300px">
-      <option value="nikujyaga">肉じゃが</option>
-      <option value="sukiyaki">すき焼き</option>
-      <option value="kare">カレーライス</option>
-      <option value="guratan">グラタン</option>
-      <option value="hanbaku">ハンバーグ</option>
-      <option value="kanitama">かに玉</option>
-      </select>
-  </body>
-  <form action="http://localhost/Textream/MakeTextStream" method="POST">
-      <div>
-          <input type="text" id="str" name="str">
-      </div>
-      <div>
-          <button>Send my greetings</button>
-      </div>
-  </form>
-  
+    <head>
+        <title><%= title %></title>
+        <link rel='stylesheet' href='/stylesheets/style.css' />
+    </head>
+    <body>
+        <h1><%= title %></h1>
+        <form id="form" action="">
+            <input type="text" id="comment" autocomplete="off" /><button>送信</button>
+            <input type="button" id="sync" onclick="sync" hidden>
+        </form>
+        <br>
+        <ul id="commentList" class="List" v-model="list">
+            <li v-for="comment in commentList">
+                {{ comment.text }}
+            </li>
+        </ul>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        <script>
+            var list = new Vue({
+                el: '#commentList',
+                data: {
+                    commentList: []
+                }
+            });
+
+            $(() => {
+                var socket = io.connect(); // 接続処理
+                $('#form').submit(() => {
+                    if ($('#comment').val() != '') {
+                        // イベントの呼び出し
+                        socket.emit('comment', $('#comment').val());
+                        // 空白にする
+                        $('#comment').val('');
+                        // $("#commentList").scrollTop($("#commentList")[0].scrollHeight );
+                        $('#commentList').animate({scrollTop: $('#commentList')[0].scrollHeight}, 'fast');
+                    }
+                    return false;
+                });
+                
+                // コールバックの設定
+                socket.on('syncCommentLog', (commentLog) => {
+                    commentLog.forEach((comment) => {
+                        list.commentList.push({
+                            text: comment.text
+                        });
+                    });
+                });
+                
+                socket.on('comment', (comment, time) => {
+                    list.commentList.push({
+                        text: `[${time}] ${comment}`
+                    });
+                });
+            });
+        </script>
+    </body>
 </html>

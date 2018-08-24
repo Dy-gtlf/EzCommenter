@@ -8,6 +8,7 @@ var app = require('../app');
 var debug = require('debug')('ezcommenter:server');
 var http = require('http');
 
+
 /**
  * Get port from environment and store in Express.
  */
@@ -20,6 +21,7 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -88,3 +90,31 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+io.on('connection', (socket) => {
+  io.to(socket.id).emit('syncCommentLog', commentLog); // 今までのコメントを取得
+  socket.on('comment', (comment) => {
+    var df = (new Date() - start) / 1000; // サーバ開始からの経過時間(秒)
+    var h = Math.floor(df / 3600); // 時間
+    var m = Math.floor(df % 3600 / 60); // 分
+    var s = Math.floor(df % 60); // 秒
+    var time = hhmmss(h, m, s); // 表示形式に変換
+    io.emit('comment', comment, time); // 全クライアントへイベントの通知
+    commentLog.push({
+        text: `[${time}] ${comment}`
+    });
+  });
+});
+
+// サーバの開始時間
+var start = new Date();
+
+// 経過時間のフォーマットを指定
+function hhmmss(h, m, s) {
+  var h0 = ('00' + h).slice(-2);
+  var m0 = ('00' + m).slice(-2);
+  var s0 = ('00' + s).slice(-2);
+  return `${h0}:${m0}:${s0}`;
+}
+
+var commentLog = [];
