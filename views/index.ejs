@@ -2,22 +2,31 @@
 <html>
     <head>
         <title><%= title %></title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <link rel='stylesheet' href='/stylesheets/style.css' />
     </head>
     <body>
-        <h1><%= title %></h1>
-        <form id="form" action="">
-            <input type="text" id="comment" autocomplete="off" /><button>送信</button>
-            <input type="button" id="sync" onclick="sync" hidden>
-        </form>
-        <br>
-        <ul id="commentList" class="List" v-model="list">
-            <li v-for="comment in commentList">
-                {{ comment.text }}
-            </li>
-        </ul>
+        <h1 class="text-center"><%= title %></h1>
+        <hr>
+        <div class="container">
+            <form id="form" action="" class="form-inline">
+                <div class="form-group mx-auto">
+                    <input type="text" id="comment" class="form-control" size="50" maxlength="100" autocomplete="off" placeholder="コメントを入力"/><button class="btn btn-primary">送信</button>
+
+                </div>
+            </form>
+            <br>
+            <ul id="commentList" class="list-group list-group-flush List box " v-model="list">
+                <li v-for="comment in commentList" class="list-group-item">
+                    [{{ comment.time }}] {{ comment.comment }}
+                </li>
+            </ul>
+        </div>
+        <hr>
         <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue"></script>
         <script>
             var list = new Vue({
@@ -45,14 +54,16 @@
                 socket.on('syncCommentLog', (commentLog) => {
                     commentLog.forEach((comment) => {
                         list.commentList.push({
-                            text: comment.text
+                            time: comment.time,
+                            comment: comment.comment
                         });
                     });
                 });
                 
                 socket.on('comment', (comment, time) => {
                     list.commentList.push({
-                        text: `[${time}] ${comment}`
+                        time: time,
+                        comment: comment
                     });
                 });
             });

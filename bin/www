@@ -101,8 +101,10 @@ io.on('connection', (socket) => {
     var time = hhmmss(h, m, s); // 表示形式に変換
     io.emit('comment', comment, time); // 全クライアントへイベントの通知
     commentLog.push({
-        text: `[${time}] ${comment}`
+        time: time,
+        comment: comment
     });
+
   });
 });
 
