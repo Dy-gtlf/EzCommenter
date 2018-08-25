@@ -7,7 +7,8 @@
 var app = require('../app');
 var debug = require('debug')('ezcommenter:server');
 var http = require('http');
-
+var request = require("request");
+var fs = require('fs');
 
 /**
  * Get port from environment and store in Express.
@@ -88,7 +89,18 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+    debug('Listening on ' + bind);
+  }
+
+var start = new Date(); // サーバの開始時間
+var commentLog = []; // コメントのログ
+
+// 経過時間のフォーマットを指定
+function hhmmss(h, m, s) {
+  var h0 = ('00' + h).slice(-2);
+  var m0 = ('00' + m).slice(-2);
+  var s0 = ('00' + s).slice(-2);
+  return `${h0}:${m0}:${s0}`;
 }
 
 io.on('connection', (socket) => {
@@ -100,23 +112,30 @@ io.on('connection', (socket) => {
     var s = Math.floor(df % 60); // 秒
     var time = hhmmss(h, m, s); // 表示形式に変換
     io.emit('comment', comment, time); // 全クライアントへイベントの通知
-    commentLog.push({
+    request.get({ // get request
+      url: "http://localhost/Textream/MakeTextStream",
+      qs: {
+        str: comment
+      }
+    }, (error, response, body) => { // コールバック
+      if (error) {
+        console.log('Textreamが起動されていません。');
+      }
+    });
+    commentLog.push({ // ログの集積
         time: time,
         comment: comment
     });
-
   });
 });
 
-// サーバの開始時間
-var start = new Date();
-
-// 経過時間のフォーマットを指定
-function hhmmss(h, m, s) {
-  var h0 = ('00' + h).slice(-2);
-  var m0 = ('00' + m).slice(-2);
-  var s0 = ('00' + s).slice(-2);
-  return `${h0}:${m0}:${s0}`;
-}
-
-var commentLog = [];
+// Ctrl+CでJSON出力
+process.once('SIGINT', () => {
+  fs.writeFileSync('CommentLog.json', JSON.stringify(commentLog, null, 4), (error) => {
+    if (error) {
+      console.log('CommentLogの出力に失敗');
+    } else {
+      console.log('CommentLogの出力完了');
+    }
+  });
+});
